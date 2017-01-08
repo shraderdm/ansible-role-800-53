@@ -1,30 +1,65 @@
 ---
 # file: scap.yml
-- name: Install Open SCAP scanner
-  yum:
-    name: openscap-scanner
-    state: present
-  when: run_scap
-  tags:
-    - scap
+- stat:
+    path: /etc/yum.repos.d/redhat-rhui.repo
+  register: rhui_repo
 
-- name: Install Open SCAP Security Guide
-  yum:
-    name: scap-security-guide
-    state: present
-  when: run_scap
-  tags:
-    - scap
+- block:
+  - name: Install Open SCAP scanner
+    yum:
+      name: openscap-scanner
+      state: present
+      disablerepo: '*'
+      enablerepo: rhel-{{ansible_distribution_major_version}}-server-rpms
+    when: run_scap
+    tags:
+      - scap
+
+  - name: Install Open SCAP Security Guide
+    yum:
+      name: scap-security-guide
+      state: present
+      disablerepo: '*'
+      enablerepo: rhel-{{ansible_distribution_major_version}}-server-rpms
+    when: run_scap
+    tags:
+      - scap
+  when: rhui_repo.stat.isreg == False
+
+- block:
+  - name: Install Open SCAP scanner
+    yum:
+      name: openscap-scanner
+      state: present
+      disablerepo: '*'
+      enablerepo: rhui-REGION-rhel-server-releases
+    when: run_scap
+    tags:
+      - scap
+
+  - name: Install Open SCAP Security Guide
+    yum:
+      name: scap-security-guide
+      state: present
+      disablerepo: '*'
+      enablerepo: rhui-REGION-rhel-server-releases
+    when: run_scap
+    tags:
+      - scap
+  when: rhui_repo.stat.isreg == True
 
 - name: Ensure the Reports Directory Exists
   file:
     path: /tmp/scap_reports
     state: directory
     mode: 0700
-    owner: "{{ ansible_env.SUDO_USER }}"
-    group: "{{ ansible_env.SUDO_USER }}"
+    owner: root
+    group: root
   tags:
     - scap
+
+- name: Reload auditd for good measure
+  shell: /sbin/augenrules --load
 
 - name: Run an SCAP scan and Generate Report EL 6
   command: /usr/bin/oscap xccdf eval --profile "{{ item }}" --results /tmp/scap_reports/scan-xccdf-results-{{ ansible_date_time.iso8601  }}-{{ item }}.xml --report /tmp/scap_reports/scan-xccdf-report-{{ ansible_date_time.iso8601  }}-{{ item }}.html  /usr/share/xml/scap/ssg/content/ssg-rhel{{ ansible_distribution_major_version }}-xccdf.xml
