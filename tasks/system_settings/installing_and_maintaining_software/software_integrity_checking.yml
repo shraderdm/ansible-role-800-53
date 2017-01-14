@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 - stat:
     path: /etc/yum.repos.d/redhat-rhui.repo
   register: rhui_repo
@@ -24,13 +25,19 @@
     - CM-6(d)
     - CM-6(3)
 
+=======
+>>>>>>> parent of be263a5... Added support for RHUI
 - name: Install AIDE
   yum:
     name: aide
     state: present
     disablerepo: '*'
+<<<<<<< HEAD
     enablerepo: rhui-REGION-rhel-server-releases
   when: rhui_repo.stat.isreg == True
+=======
+    enablerepo: rhel-{{ansible_distribution_major_version}}-server-rpms
+>>>>>>> parent of be263a5... Added support for RHUI
   tags:
     - conf-low
     - conf-medium
