@@ -43,8 +43,10 @@ vpn_package: openswan
 #Whether or not to run an SCAP scan
 run_scap: true
 #The profile to run
-scap_profile:
+scap_profile_6:
   - stig-rhel{{ ansible_distribution_major_version }}-server-upstream
+scap_profile_7:
+  - stig-rhel{{ ansible_distribution_major_version }}-disa
 #Where on your local host you wish to place the reports
 scap_reports_dir: /tmp
 ```
